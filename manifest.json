@@ -1,0 +1,21 @@
+{
+    "name": "Edollar Calculator",
+    "short_name": "Edollar",
+    "start_url": "index.html",
+    "display": "standalone",
+    "background_color": "#0A2342",
+    "theme_color": "#0A2342",
+    "description": "A simple offline-first currency transaction calculator.",
+    "icons": [
+        {
+            "src": "icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
