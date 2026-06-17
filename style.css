@@ -189,7 +189,40 @@ main {
     cursor: pointer;
     margin-top: 10px;
 }
+header {
+    background-color: var(--header-bg);
+    color: white;
+    padding: 8px 15px; /* Slight reduction in vertical padding to give the logo a clean frame */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
 
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Uniform spacing between the logo graphic and the title string */
+}
+
+/* New layout rule handling the logo element scale */
+.logo-img {
+    height: 40px;          /* Restricts the element bounds to match standard header dimensions */
+    width: 40px;           /* Maintains square dimensions for the emblem geometry */
+    border-radius: 6px;    /* Adds a soft smooth edge to frame the dark image container background nicely */
+    object-fit: cover;
+    display: block;
+}
+
+.header-title {
+    font-size: 0.9em;
+    opacity: 0.9;
+    font-weight: 500;
+}
 #result-display {
     margin-top: 20px;
     text-align: center;
