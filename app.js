@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         transactions: [],
         activeConversion: 'ngn-to-ghs', // 'ngn-to-ghs' or 'ghs-to-ngn'
+        activeSubTab: 'need-ghs', // 'need-ghs' or 'need-ngn'
     };
 
     // --- SELECTORS ---
@@ -33,10 +34,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Calculate View Selectors
     const tabLinks = document.querySelectorAll('.tab-link');
     const subTabLinks = document.querySelectorAll('.sub-tab-link');
-    const ngnToGhsForm = document.getElementById('ngn-to-ghs-form');
-    const ghsToNgnForm = document.getElementById('ghs-to-ngn-form');
-    const ngnInput = document.getElementById('ngn-input');
-    const ghsInput = document.getElementById('ghs-input');
+    const ngnSendForm = document.getElementById('ngn-send-form');
+    const ngnNeedForm = document.getElementById('ngn-need-form');
+    const ghsSendForm = document.getElementById('ghs-send-form');
+    const ghsNeedForm = document.getElementById('ghs-need-form');
+    const ngnSendInput = document.getElementById('ngn-send-input');
+    const ngnNeedInput = document.getElementById('ngn-need-input');
+    const ghsSendInput = document.getElementById('ghs-send-input');
+    const ghsNeedInput = document.getElementById('ghs-need-input');
     const calculateBtn = document.getElementById('calculate-btn');
     const activeRateEl = document.getElementById('active-rate');
     const tabDescription = document.querySelector('.tab-description');
@@ -74,6 +79,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // Formula: Divide by rate, add 3 zeros (multiply by 1000)
         // (Amount / Rate) * 1000
         return Number(((amount / rate) * 1000).toFixed(2));
+    };
+
+    // "Amount Needed" calculations (reverse scenarios)
+    const calculateNgnNeededForGhs = (ghsAmount, ngnToGhsRate) => {
+        if (isNaN(ghsAmount) || ghsAmount < 0) return 0;
+        // Formula: (Amount in Cedis / Naira to Cedis Rate) * 1000
+        // Customer needs X GHS, how much NGN to send?
+        return Number(((ghsAmount / ngnToGhsRate) * 1000).toFixed(2));
+    };
+
+    const calculateGhsNeededForNgn = (ngnAmount, ghsToNgnRate) => {
+        if (isNaN(ngnAmount) || ngnAmount < 0) return 0;
+        // Formula: Amount in Naira * Cedis to Naira Rate / 1000
+        // Customer needs X NGN, how much GHS to send?
+        return Number(((ngnAmount * ghsToNgnRate) / 1000).toFixed(2));
     };
 
     // --- OFFLINE STORAGE (from Prompt 2) ---
@@ -169,34 +189,52 @@ document.addEventListener('DOMContentLoaded', () => {
         
         tabLinks.forEach(link => link.classList.toggle('active', link.dataset.tab === tab));
         
-        const isNgnToGhs = tab === 'ngn-to-ghs';
-        ngnToGhsForm.style.display = isNgnToGhs ? 'block' : 'none';
-        ghsToNgnForm.style.display = isNgnToGhs ? 'none' : 'block';
+        // Auto-switch sub-tabs based on main tab
+        const newSubTab = tab === 'ngn-to-ghs' ? 'need-ghs' : 'need-ngn';
+        state.activeSubTab = newSubTab;
+        subTabLinks.forEach(link => link.classList.toggle('active', link.dataset.subtab === newSubTab));
         
         updateCalculatorUI();
     };
     
     const switchSubTab = (subtab) => {
-         subTabLinks.forEach(link => link.classList.toggle('active', link.dataset.subtab === subtab));
-         if (subtab === 'need-ghs') {
-             switchConversionTab('ngn-to-ghs');
-         } else {
-             switchConversionTab('ghs-to-ngn');
-         }
-    }
+        state.activeSubTab = subtab;
+        subTabLinks.forEach(link => link.classList.toggle('active', link.dataset.subtab === subtab));
+        
+        // Auto-switch main tab based on sub-tab
+        const newTab = subtab === 'need-ghs' ? 'ngn-to-ghs' : 'ghs-to-ngn';
+        state.activeConversion = newTab;
+        tabLinks.forEach(link => link.classList.toggle('active', link.dataset.tab === newTab));
+        
+        updateCalculatorUI();
+    };;
 
     const updateCalculatorUI = () => {
-        const isNgnToGhs = state.activeConversion === 'ngn-to-ghs';
+        const isNgnToGhs = state.activeSubTab === 'need-ghs'; // need-ghs maps to NGN→GHS
+        const isNeedNgn = state.activeSubTab === 'need-ngn';   // need-ngn maps to GHS→NGN
+        
+        // Show/hide forms based on sub-tab selection
         if (isNgnToGhs) {
+            ngnSendForm.style.display = 'block';
+            ghsSendForm.style.display = 'none';
+            ngnNeedForm.style.display = 'none';
+            ghsNeedForm.style.display = 'none';
             activeRateEl.textContent = state.rates.ngnToGhsRate;
-            tabDescription.textContent = "Customer gives you Naira, you pay Cedis";
-        } else {
+            tabDescription.textContent = "Customer sends Naira, you pay Cedis";
+        } else { // isNeedNgn
+            ngnSendForm.style.display = 'none';
+            ghsSendForm.style.display = 'block';
+            ngnNeedForm.style.display = 'none';
+            ghsNeedForm.style.display = 'none';
             activeRateEl.textContent = state.rates.ghsToNgnRate;
-            tabDescription.textContent = "Customer gives you Cedis, you pay Naira";
+            tabDescription.textContent = "Customer sends Cedis, you pay Naira";
         }
+        
         // Clear inputs and results
-        ngnInput.value = '';
-        ghsInput.value = '';
+        ngnSendInput.value = '';
+        ngnNeedInput.value = '';
+        ghsSendInput.value = '';
+        ghsNeedInput.value = '';
         resultDisplay.style.display = 'none';
     };
 
@@ -256,27 +294,40 @@ document.addEventListener('DOMContentLoaded', () => {
     calculateBtn.addEventListener('click', () => {
         let payout = 0;
         let inputAmount = 0;
-        if (state.activeConversion === 'ngn-to-ghs') {
-            inputAmount = parseFloat(ngnInput.value);
+        let transactionType = '';
+        
+        if (state.activeSubTab === 'need-ghs') {
+            // NGN to GHS: Customer sends NGN
+            inputAmount = parseFloat(ngnSendInput.value);
             payout = calculateNgnToGhs(inputAmount, state.rates.ngnToGhsRate);
+            transactionType = 'NGN_TO_GHS';
+            payoutAmountEl.textContent = `${payout.toFixed(2)} GHS`;
         } else {
-            inputAmount = parseFloat(ghsInput.value);
+            // GHS to NGN: Customer sends GHS
+            inputAmount = parseFloat(ghsSendInput.value);
             payout = calculateGhsToNgn(inputAmount, state.rates.ghsToNgnRate);
+            transactionType = 'GHS_TO_NGN';
+            payoutAmountEl.textContent = `${payout.toFixed(2)} NGN`;
         }
-        payoutAmountEl.textContent = payout.toFixed(2);
+        
         resultDisplay.style.display = 'block';
+        resultDisplay.dataset.payout = payout;
+        resultDisplay.dataset.inputAmount = inputAmount;
+        resultDisplay.dataset.type = transactionType;
     });
 
     saveTransactionBtn.addEventListener('click', () => {
-        const type = state.activeConversion === 'ngn-to-ghs' ? 'NGN_TO_GHS' : 'GHS_TO_NGN';
-        const inputAmount = type === 'NGN_TO_GHS' ? ngnInput.value : ghsInput.value;
+        const type = resultDisplay.dataset.type || 'NGN_TO_GHS';
+        const inputAmount = resultDisplay.dataset.inputAmount;
         const customerName = customerNameInput.value;
         
         if (parseFloat(inputAmount) > 0) {
             addTransaction(type, inputAmount, customerName);
             // Clear inputs after saving
-            ngnInput.value = '';
-            ghsInput.value = '';
+            ngnSendInput.value = '';
+            ghsSendInput.value = '';
+            ngnNeedInput.value = '';
+            ghsNeedInput.value = '';
             customerNameInput.value = '';
             resultDisplay.style.display = 'none';
         } else {
@@ -319,12 +370,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const init = () => {
         storage.loadState();
         switchView(state.currentView);
-        switchConversionTab(state.activeConversion);
+        switchSubTab(state.activeSubTab || 'need-ghs');
         renderHistory();
         updateSettingsUI();
-        // Set initial active tab for sub-tabs
-        const initialSubTab = state.activeConversion === 'ngn-to-ghs' ? 'need-ghs' : 'need-ngn';
-        subTabLinks.forEach(link => link.classList.toggle('active', link.dataset.subtab === initialSubTab));
     };
 
     init();

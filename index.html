@@ -11,10 +11,7 @@
 <body>
     <header>
         <div class="logo">
-            <div class="logo-text">
-                <span class="logo-main">EDOLLAR</span>
-                <span class="logo-sub">GROUP</span>
-            </div>
+            <img src="edollar.jpg" alt="Edollar Group" class="logo-img">
             <span class="header-title">Currency Transaction Calculator</span>
         </div>
         <div class="currency-toggle">
@@ -38,13 +35,27 @@
                 <span class="dot"></span> Active rate: <span id="active-rate">0.0</span>
             </div>
             <div class="calculator-form">
-                <div id="ngn-to-ghs-form">
-                    <label for="ngn-input">CUSTOMER SENDS (NGN)</label>
-                    <input type="number" id="ngn-input" placeholder="NGN 0.00">
+                <!-- NGN to GHS: Customer Sends NGN -->
+                <div id="ngn-send-form" class="amount-form">
+                    <label for="ngn-send-input">CUSTOMER SENDS (NGN)</label>
+                    <input type="number" id="ngn-send-input" placeholder="NGN 0.00">
                 </div>
-                <div id="ghs-to-ngn-form" style="display: none;">
-                    <label for="ghs-input">CUSTOMER SENDS (GHS)</label>
-                    <input type="number" id="ghs-input" placeholder="GHS 0.00">
+                <!-- NGN to GHS: Customer Needs GHS -->
+                <div id="ngn-need-form" class="amount-form" style="display: none;">
+                    <label for="ngn-need-input">CUSTOMER NEEDS (GHS)</label>
+                    <input type="number" id="ngn-need-input" placeholder="GHS 0.00">
+                    <p class="form-hint">How much NGN must they send to get this GHS?</p>
+                </div>
+                <!-- GHS to NGN: Customer Sends GHS -->
+                <div id="ghs-send-form" class="amount-form" style="display: none;">
+                    <label for="ghs-send-input">CUSTOMER SENDS (GHS)</label>
+                    <input type="number" id="ghs-send-input" placeholder="GHS 0.00">
+                </div>
+                <!-- GHS to NGN: Customer Needs NGN -->
+                <div id="ghs-need-form" class="amount-form" style="display: none;">
+                    <label for="ghs-need-input">CUSTOMER NEEDS (NGN)</label>
+                    <input type="number" id="ghs-need-input" placeholder="NGN 0.00">
+                    <p class="form-hint">How much GHS must they send to get this NGN?</p>
                 </div>
                 <button id="calculate-btn">⇌ Calculate</button>
                  <div id="result-display" style="display: none;">
