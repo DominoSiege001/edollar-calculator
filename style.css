@@ -40,11 +40,23 @@ header {
     gap: 15px;
 }
 
-.logo-img {
-    height: 50px;
-    width: auto;
-    max-width: 200px;
-    object-fit: contain;
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.logo-main {
+    font-size: 1.1em;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.logo-sub {
+    font-size: 0.85em;
+    color: #FFC107;
+    font-weight: bold;
+    letter-spacing: 2px;
 }
 
 .header-title {
@@ -188,18 +200,6 @@ main {
     font-weight: bold;
     color: var(--secondary-color);
     margin: 10px 0;
-}
-
-.amount-form {
-    margin-bottom: 15px;
-}
-
-.form-hint {
-    font-size: 0.85em;
-    color: #999;
-    margin-top: -10px;
-    margin-bottom: 15px;
-    font-style: italic;
 }
 
 
