@@ -40,11 +40,23 @@ header {
     gap: 15px;
 }
 
-.logo-img {
-    height: 45px;
-    width: auto;
-    max-width: 150px;
-    object-fit: contain;
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.logo-main {
+    font-size: 1.1em;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.logo-sub {
+    font-size: 0.85em;
+    color: #FFC107;
+    font-weight: bold;
+    letter-spacing: 2px;
 }
 
 .header-title {
